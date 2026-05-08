@@ -11,11 +11,11 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>金句抽卡</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      background: radial-gradient(ellipse at 30% 20%, #1e1e3a 0%, #1a1a2e 40%, #13132b 100%);
       min-height: 100vh;
       color: #fff;
       overflow-x: hidden;
@@ -25,248 +25,432 @@
     .container {
       max-width: 420px;
       margin: 0 auto;
-      padding: 52px 20px 36px;
+      padding: 48px 20px 36px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     /* ===== Header ===== */
-    .header { text-align: center; margin-bottom: 32px; }
+    .header { text-align:center; margin-bottom: 28px; }
     .title {
-      display: block; font-size: 26px; font-weight: 700;
-      color: #e8d5b7; letter-spacing: 4px; margin-bottom: 8px;
+      display:block; font-size:28px; font-weight:800;
+      background: linear-gradient(135deg, #e8d5b7 20%, #f0e6c8 50%, #d4a24e 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 5px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 8px rgba(201,169,110,0.35));
     }
-    .subtitle { font-size: 13px; color: rgba(255,255,255,0.38); }
+    .subtitle { font-size:12px; color:rgba(255,255,255,0.32); }
 
     /* ===== Deck Visual ===== */
     .deck-visual {
-      margin-bottom: 40px; display: flex;
-      flex-direction: column; align-items: center;
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
     }
-    .deck-stack { position: relative; width: 220px; height: 140px; margin-bottom: 16px; }
-    .deck-card {
-      position: absolute; width: 220px; height: 132px; border-radius: 14px;
-      border: 1.5px solid rgba(232,213,183,0.15);
-      background: linear-gradient(135deg, #2d3561, #1e2243);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .deck-card:nth-child(1) { top: 8px; left: 0; box-shadow: 0 8px 28px rgba(0,0,0,0.5); z-index: 3; }
-    .deck-card:nth-child(2) { top: 4px; left: 0; opacity: 0.7; z-index: 2; }
-    .deck-card:nth-child(3) { top: 0; left: 0; opacity: 0.4; z-index: 1; }
-    .deck-card-inner {
-      width: 196px; height: 108px; border-radius: 8px;
-      border: 1px solid rgba(232,213,183,0.12);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    }
-    .deck-icon { font-size: 28px; opacity: 0.5; }
-    .deck-label { font-size: 11px; color: rgba(232,213,183,0.4); letter-spacing: 2px; }
-    .deck-hint { font-size: 12px; color: rgba(255,255,255,0.28); }
+    .deck-stack { position:relative; width:180px; height:240px; margin-bottom:14px; }
 
-    /* ===== Card Result Area ===== */
+    /* 牌堆底部底座 */
+    .deck-base {
+      position:absolute; width:160px; height:224px;
+      border-radius:14px;
+      background: linear-gradient(160deg, #2a1f5c, #1b1545);
+      border: 1.5px solid rgba(201,169,110,0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .deck-base:nth-child(1) { top:0; left:10px; z-index:1; }
+    .deck-base:nth-child(2) { top:2px; left:10px; z-index:2; }
+    .deck-base:nth-child(3) {
+      top:4px; left:10px; z-index:3;
+      background: linear-gradient(160deg, #3d2b7a, #24185a);
+      border-color: rgba(201,169,110,0.35);
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap:6px;
+    }
+    .deck-icon { font-size:32px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
+    .deck-label { font-size:10px; color:rgba(232,213,183,0.6); letter-spacing:3px; }
+    .deck-hint {
+      font-size:11px; color:rgba(255,255,255,0.25);
+      margin-top:2px;
+    }
+
+    /* ===== Shuffle animation ===== */
+    @keyframes shuffleDeck {
+      0%   { transform: rotate(0deg); }
+      20%  { transform: rotate(-6deg) translateX(-4px); }
+      40%  { transform: rotate(5deg) translateX(4px); }
+      60%  { transform: rotate(-4deg) translateX(-3px); }
+      80%  { transform: rotate(3deg) translateX(2px); }
+      100% { transform: rotate(0deg); }
+    }
+    .deck-stack.shuffling .deck-base:nth-child(3) {
+      animation: shuffleDeck 0.5s ease-in-out;
+    }
+
+    /* ===== Card Area ===== */
     .card-area {
-      width: 100%; display: flex; flex-direction: column;
-      align-items: center; margin-bottom: 32px;
+      width:100%; display:flex; flex-direction:column;
+      align-items:center; margin-bottom:28px;
     }
 
-    /* ——— Single Card ——— */
+    /* ===== Single Card 3D Flip ===== */
     .card-wrapper {
-      width: 100%; perspective: 1000px; margin-bottom: 16px;
+      width:100%;
+      perspective: 1200px;
+      margin-bottom:16px;
     }
-    .card-result {
-      width: 100%; position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.34, 1.3, 0.64, 1);
+    .card-inner {
+      width:100%;
+      position:relative;
+      transform-style:preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor:default;
     }
-    .card-result.revealed { transform: rotateY(0deg); }
+    .card-inner.flipped {
+      transform: rotateY(180deg);
+    }
 
-    .card-back {
-      width: 100%; border-radius: 18px;
-      background: linear-gradient(135deg, #2d3561, #1e2243);
-      border: 1.5px solid rgba(255,255,255,0.1);
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
-      display: flex; align-items: center; justify-content: center;
-      padding: 28px 0; backface-visibility: hidden;
-      animation: pulse 1s ease-in-out infinite;
-    }
-    .card-back-inner {
-      width: calc(100% - 32px); padding: 24px 0;
-      border: 1px solid rgba(232,213,183,0.15); border-radius: 12px;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-    }
-    .card-back-icon { font-size: 40px; opacity: 0.3; }
-    .card-back-text { font-size: 12px; color: rgba(232,213,183,0.3); letter-spacing: 3px; }
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.015); } }
-
+    /* Card face - shared */
     .card-face {
-      position: absolute; inset: 0; border-radius: 18px;
-      background: linear-gradient(160deg, #fffef5 0%, #f5f0e1 100%);
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 0 1.5px rgba(232,213,183,0.4);
-      opacity: 0; transform: scale(0.88) rotateY(8deg);
-      transition: all 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
-      padding: 20px 18px 18px; display: flex; flex-direction: column;
-      backface-visibility: hidden;
+      width:100%;
+      border-radius:18px;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+      position:absolute;
+      top:0; left:0;
+      overflow:hidden;
     }
-    .card-result.revealed .card-face {
-      opacity: 1; transform: scale(1) rotateY(0deg);
-    }
-    .card-result.revealed .card-back { opacity: 0; }
 
-    /* Card face content */
+    /* CARD BACK (金句牌背) */
+    .card-back-face {
+      position:relative;
+      width:100%;
+      background:
+        linear-gradient(135deg, #2a1f5c 0%, #1b1545 50%, #130e2a 100%);
+      border: 1.5px solid rgba(201,169,110,0.3);
+      box-shadow:
+        0 14px 52px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(201,169,110,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      aspect-ratio: 5/7;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+    }
+
+    /* 牌背装饰花纹 */
+    .card-back-face::before {
+      content:'';
+      position:absolute; inset:8px;
+      border: 1px solid rgba(201,169,110,0.15);
+      border-radius:13px;
+      pointer-events:none;
+    }
+    .card-back-face::after {
+      content:'';
+      position:absolute; inset:14px;
+      border: 0.5px solid rgba(201,169,110,0.08);
+      border-radius:11px;
+      pointer-events:none;
+    }
+    .back-content {
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      z-index:1;
+    }
+    .back-icon { font-size:38px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+    .back-title {
+      font-size:14px;
+      background: linear-gradient(135deg, #e8d5b7, #d4a24e);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      letter-spacing:4px; font-weight:700;
+    }
+    .back-sub {
+      font-size:9px; color:rgba(232,213,183,0.35);
+      letter-spacing:2px; margin-top:2px;
+    }
+
+    /* CARD FRONT (金句正面) */
+    .card-front-face {
+      transform: rotateY(180deg);
+      position:relative;
+      width:100%;
+      background:
+        linear-gradient(170deg, #fffef7 0%, #f5f0e0 40%, #ede6d3 100%);
+      border: 1.5px solid rgba(201,169,110,0.5);
+      box-shadow:
+        0 14px 52px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(201,169,110,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      aspect-ratio: 5/7;
+      padding: 22px 18px 18px;
+      display:flex; flex-direction:column;
+      overflow:hidden;
+    }
+
+    /* 纸纹效果 */
+    .card-front-face::before {
+      content:'';
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(201,169,110,0.03) 2px,
+          rgba(201,169,110,0.03) 4px
+        );
+      border-radius:18px;
+      pointer-events:none;
+    }
+
+    /* 牌面边框装饰 */
+    .card-front-face::after {
+      content:'';
+      position:absolute; inset:6px;
+      border: 0.5px solid rgba(201,169,110,0.2);
+      border-radius:14px;
+      pointer-events:none;
+    }
+
+    .card-front-inner {
+      position:relative; z-index:1;
+      display:flex; flex-direction:column;
+      height:100%;
+    }
+
+    /* 顶部：分类标签 */
     .card-category {
-      display: inline-flex; align-items: center;
-      background: rgba(26,26,46,0.08); border-radius: 20px;
-      padding: 3px 10px; font-size: 11px;
-      color: #666; letter-spacing: 1px; margin-bottom: 12px;
-      align-self: flex-start;
+      display:inline-flex; align-items:center; gap:4px;
+      padding: 3px 10px;
+      border-radius:20px;
+      font-size:10px;
+      font-weight:600;
+      letter-spacing:1.5px;
+      align-self:flex-start;
+      margin-bottom:14px;
     }
+    .cat-战略 { background:rgba(231,76,60,0.12); color:#c0392b; }
+    .cat-工作 { background:rgba(41,128,185,0.12); color:#1a6fa0; }
+    .cat-哲学 { background:rgba(39,174,96,0.12); color:#1e8449; }
+    .cat-精神 { background:rgba(142,68,173,0.12); color:#7d3c98; }
+
+    /* 金句正文 */
     .card-quote {
-      font-size: 17px; font-weight: 700; color: #1a1a2e;
-      line-height: 1.55; margin-bottom: 14px;
-      border-left: 3px solid #c9a96e; padding-left: 10px;
+      font-size:17px;
+      font-weight:700;
+      color:#1a1a2e;
+      line-height:1.65;
+      margin-bottom:16px;
+      padding-left:12px;
+      border-left: 3px solid;
+      border-image: linear-gradient(to bottom, #c9a96e, #e8d5b7) 1;
+      flex:1;
     }
+    .cat-战略 .card-quote { border-image: linear-gradient(to bottom, #e74c3c, #f1948a) 1; }
+    .cat-工作 .card-quote { border-image: linear-gradient(to bottom, #2980b9, #85c1e9) 1; }
+    .cat-哲学 .card-quote { border-image: linear-gradient(to bottom, #27ae60, #82e0aa) 1; }
+
+    /* 分割线 */
     .card-divider {
-      height: 1px; background: rgba(26,26,46,0.08); margin-bottom: 12px;
+      height:1px;
+      background: linear-gradient(90deg, rgba(201,169,110,0.3), rgba(201,169,110,0.08));
+      margin-bottom:14px;
     }
+
+    /* 解读 */
     .card-interpretation {
-      font-size: 13px; color: #555; line-height: 1.7; flex: 1;
+      font-size:12.5px;
+      color:#555;
+      line-height:1.75;
+      position:relative;
+      padding-left:10px;
     }
+    .card-interpretation::before {
+      content:'💡';
+      position:absolute; left:-2px; top:-1px;
+      font-size:10px;
+    }
+
+    /* 编号 */
     .card-number {
-      align-self: flex-end; font-size: 11px; color: rgba(26,26,46,0.2);
-      margin-top: 10px; font-weight: 600;
+      align-self:flex-end;
+      font-size:10px;
+      color:rgba(26,26,46,0.18);
+      font-weight:700;
+      letter-spacing:1px;
+      margin-top:8px;
     }
 
-    /* Category colors */
-    .cat-战略 { background: rgba(231,76,60,0.1); color: #c0392b; }
-    .cat-工作 { background: rgba(41,128,185,0.1); color: #2471a3; }
-    .cat-哲学 { background: rgba(39,174,96,0.1); color: #1e8449; }
-    .cat-精神 { background: rgba(142,68,173,0.1); color: #7d3c98; }
+    /* ===== Draw animation ===== */
+    @keyframes drawCard {
+      0%   { opacity:0; transform:translateY(60px) rotate(-3deg) scale(0.85); }
+      60%  { opacity:1; transform:translateY(-8px) rotate(0.5deg) scale(1.02); }
+      100% { transform:translateY(0) rotate(0) scale(1); }
+    }
+    .card-wrapper.drawing { animation: drawCard 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
 
-    /* ——— Multi Cards ——— */
+    /* ===== Multi Cards ===== */
     .multi-cards {
-      display: flex; gap: 10px; flex-wrap: nowrap;
-      overflow-x: auto; width: 100%; padding: 4px 0 12px;
-      -webkit-overflow-scrolling: touch;
+      display:flex; gap:10px; flex-wrap:nowrap;
+      overflow-x:auto; width:100%;
+      padding:4px 0 16px;
+      -webkit-overflow-scrolling:touch;
     }
-    .multi-cards::-webkit-scrollbar { display: none; }
+    .multi-cards::-webkit-scrollbar { display:none; }
     .mini-card {
-      flex: 0 0 auto; width: 150px;
-      background: linear-gradient(160deg, #fffef5, #f5f0e1);
-      border-radius: 14px; padding: 14px 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-      animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+      flex:0 0 auto; width:140px;
+      background: linear-gradient(170deg, #fffef7, #f5f0e0);
+      border-radius:12px; padding:14px 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 0.5px rgba(201,169,110,0.3);
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+      position:relative;
+      overflow:hidden;
     }
-    @keyframes pop {
-      from { opacity:0; transform: scale(0.6) translateY(16px); }
-      to { opacity:1; transform: none; }
+    .mini-card::before {
+      content:'';
+      position:absolute; inset:4px;
+      border:0.5px solid rgba(201,169,110,0.15);
+      border-radius:9px; pointer-events:none;
     }
-    .mini-cat {
-      font-size: 10px; color: #888; margin-bottom: 6px;
-      display: block; letter-spacing: 1px;
+    @keyframes popIn {
+      from { opacity:0; transform:scale(0.5) translateY(24px); }
+      to   { opacity:1; transform:none; }
     }
-    .mini-quote {
-      font-size: 12px; font-weight: 700; color: #1a1a2e;
-      line-height: 1.5; margin-bottom: 6px;
-      display: -webkit-box; -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .mini-num { font-size: 10px; color: rgba(26,26,46,0.2); }
+    .mini-cat { font-size:9px; color:#999; margin-bottom:6px; display:block; letter-spacing:1px; }
+    .mini-quote { font-size:12px; font-weight:700; color:#1a1a2e; line-height:1.5; }
+    .mini-num { font-size:9px; color:rgba(26,26,46,0.2); margin-top:8px; display:block; }
 
-    /* Close btn */
+    /* ===== Close btn ===== */
     .close-btn {
-      padding: 9px 36px; background: rgba(255,255,255,0.08);
-      border-radius: 24px; color: rgba(255,255,255,0.4); font-size: 13px;
-      cursor: pointer; border: none; transition: background 0.15s;
+      padding:10px 36px;
+      background:rgba(255,255,255,0.07);
+      border-radius:24px;
+      color:rgba(255,255,255,0.4);
+      font-size:13px;
+      cursor:pointer;
+      border:none;
+      transition: background 0.15s;
+      margin-top:8px;
     }
-    .close-btn:active { background: rgba(255,255,255,0.15); }
+    .close-btn:active { background:rgba(255,255,255,0.14); }
 
-    /* Empty */
-    .empty-text { font-size: 20px; color: rgba(255,255,255,0.32); margin-bottom: 32px; }
+    /* ===== Empty ===== */
+    .empty-text {
+      font-size:18px; color:rgba(255,255,255,0.28);
+      margin-bottom:28px; text-align:center;
+      line-height:1.8;
+    }
 
     /* ===== Buttons ===== */
-    .actions { width: 100%; margin-bottom: 32px; }
-    .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .actions { width:100%; margin-bottom:28px; }
+    .btn-row { display:flex; gap:9px; margin-bottom:10px; }
     .btn {
-      flex: 1; height: 50px; display: flex; align-items: center; justify-content: center;
-      border-radius: 14px; font-size: 16px; font-weight: 600; letter-spacing: 1px;
-      cursor: pointer; border: none; transition: transform 0.12s, box-shadow 0.12s;
+      flex:1; height:50px; display:flex; align-items:center; justify-content:center;
+      border-radius:14px; font-size:15.5px; font-weight:700;
+      letter-spacing:1.5px;
+      cursor:pointer; border:none;
+      transition: transform 0.1s, box-shadow 0.15s;
+      user-select:none;
     }
-    .btn:active { transform: scale(0.96); }
+    .btn:active { transform:scale(0.95); }
     .btn-primary {
-      background: linear-gradient(135deg, #e8d5b7, #c9a96e); color: #1a1a2e;
-      box-shadow: 0 4px 18px rgba(201,169,110,0.35);
+      background: linear-gradient(135deg, #e8d5b7, #c9a96e);
+      color:#1a1a2e;
+      box-shadow: 0 4px 18px rgba(201,169,110,0.4);
     }
+    .btn-primary:active { box-shadow: 0 2px 8px rgba(201,169,110,0.5); }
     .btn-secondary {
-      background: rgba(232,213,183,0.1); color: #e8d5b7;
+      background:rgba(232,213,183,0.1);
+      color:#e8d5b7;
       border: 1.5px solid rgba(232,213,183,0.22);
     }
     .btn-outline {
-      background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5);
-      border: 1.5px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04);
+      color:rgba(255,255,255,0.5);
+      border:1.5px solid rgba(255,255,255,0.1);
     }
     .btn-reset {
-      width: 100%; height: 42px; display: flex; align-items: center; justify-content: center;
-      border-radius: 14px; font-size: 13px; color: rgba(255,255,255,0.3);
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      cursor: pointer; letter-spacing: 1px;
+      width:100%; height:42px; display:flex; align-items:center; justify-content:center;
+      border-radius:14px; font-size:12.5px;
+      color:rgba(255,255,255,0.28);
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.06);
+      cursor:pointer; letter-spacing:1px;
+      transition: background 0.15s;
     }
-    .btn-reset:active { background: rgba(255,255,255,0.07); }
+    .btn-reset:active { background:rgba(255,255,255,0.07); }
 
     /* ===== History ===== */
     .history-section {
-      width: 100%; background: rgba(255,255,255,0.03);
-      border-radius: 16px; padding: 16px 14px;
+      width:100%;
+      background:rgba(255,255,255,0.025);
+      border-radius:16px;
+      padding:14px 14px;
+      border:1px solid rgba(255,255,255,0.05);
     }
     .history-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
     }
-    .history-title { font-size: 12px; color: rgba(255,255,255,0.38); font-weight: 600; letter-spacing: 1px; }
-    .history-list { max-height: 220px; overflow-y: auto; }
-    .history-list::-webkit-scrollbar { width: 2px; }
-    .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    .history-title {
+      font-size:11px; color:rgba(255,255,255,0.35);
+      font-weight:600; letter-spacing:1px;
+    }
+    .history-list { max-height:200px; overflow-y:auto; }
+    .history-list::-webkit-scrollbar { width:2px; }
+    .history-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
     .history-item {
-      display: flex; align-items: flex-start; padding: 10px 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;
+      display:flex; align-items:flex-start;
+      padding:9px 6px;
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      gap:10px;
     }
-    .history-item:last-child { border-bottom: none; }
-    .history-num { font-size: 11px; color: rgba(255,255,255,0.22); width: 22px; flex-shrink: 0; padding-top: 1px; }
-    .history-info { flex: 1; min-width: 0; }
-    .history-cat { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
-    .history-quote { font-size: 13px; color: rgba(255,255,255,0.7); font-weight: 500; line-height: 1.4; }
-
-    /* Install hint */
-    .install-hint {
-      margin-top: 18px; padding: 13px 16px;
-      background: rgba(232,213,183,0.07); border-radius: 12px;
-      border: 1px solid rgba(232,213,183,0.13); text-align: center; max-width: 340px;
+    .history-item:last-child { border-bottom:none; }
+    .history-num {
+      font-size:10px; color:rgba(255,255,255,0.18);
+      width:20px; flex-shrink:0; padding-top:1px;
+      font-weight:600;
     }
-    .install-hint p { font-size: 11px; color: rgba(255,255,255,0.42); line-height: 1.7; }
-    .install-hint strong { color: #e8d5b7; }
+    .history-info { flex:1; min-width:0; }
+    .history-cat { font-size:9px; color:rgba(255,255,255,0.25); margin-bottom:2px; }
+    .history-quote {
+      font-size:12.5px; color:rgba(255,255,255,0.65);
+      font-weight:500; line-height:1.45;
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <span class="title">☆ 金句抽卡</span>
+    <span class="title">金句抽卡</span>
     <span class="subtitle">剩余 <span id="remaining">54</span> 张 / 共 54 张</span>
   </div>
 
   <!-- Deck visual -->
   <div class="deck-visual" id="deckVisual">
-    <div class="deck-stack">
-      <div class="deck-card"><div class="deck-card-inner"><span class="deck-icon">📖</span><span class="deck-label">金句牌组</span></div></div>
-      <div class="deck-card"></div>
-      <div class="deck-card"></div>
+    <div class="deck-stack" id="deckStack">
+      <div class="deck-base"></div>
+      <div class="deck-base"></div>
+      <div class="deck-base">
+        <span class="deck-icon">📖</span>
+        <span class="deck-label">金句牌组</span>
+      </div>
     </div>
-    <span class="deck-hint">点击下方按钮抽取智慧</span>
+    <span class="deck-hint">点击下方按钮抽取智慧 ✨</span>
   </div>
 
   <!-- Card result area -->
   <div class="card-area" id="cardArea" style="display:none;"></div>
 
   <!-- Empty state -->
-  <div class="empty-text" id="emptyState" style="display:none;">全部抽完啦 🎉</div>
+  <div class="empty-text" id="emptyState" style="display:none;">
+    全部抽完啦 🎉<br><span style="font-size:13px;color:rgba(255,255,255,0.22);">点击重新洗牌开始新一轮</span>
+  </div>
 
   <!-- Buttons -->
   <div class="actions">
@@ -275,7 +459,7 @@
       <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
       <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
     </div>
-    <button class="btn-reset" onclick="resetDeck()">🔄 重新洗牌</button>
+    <button class="btn-reset" onclick="resetDeck()">↻ 重新洗牌</button>
   </div>
 
   <!-- History -->
@@ -285,18 +469,13 @@
     </div>
     <div class="history-list" id="historyList"></div>
   </div>
-
-  <!-- Install hint -->
-  <div class="install-hint">
-    <p><strong>📱 添加到主屏幕</strong><br>Safari 打开 → 分享按钮 → 添加到主屏幕</p>
-  </div>
 </div>
 
 <script>
 // ==================== 卡牌数据 ====================
 const CARDS = [
   { id:1,  cat:'战略与斗争', quote:'枪杆子里面出政权', interpretation:'在职场中，核心业务能力和不可替代的硬技能，就是你的"枪杆子"。' },
-  { id:2,  cat:'战略与斗争', quote:'一切反动派都是纸老虎', interpretation:'面对看似强大的竞争对手或巨大的困难，要在心理上藐视它，不要被它的气势吓倒。' },
+  { id:2,  cat:'战略与斗争', quote:'一切反动派都是纸老虎', interpretation:'面对看似强大的竞争对手或巨大的困难，要在心理上藐視它，不要被它的气势吓倒。' },
   { id:3,  cat:'战略与斗争', quote:'战略上藐视敌人，战术上重视敌人', interpretation:'宏观上要有必胜的信心，但在具体执行每一个PPT、每一行代码时，要极度严谨。' },
   { id:4,  cat:'战略与斗争', quote:'人不犯我，我不犯人；人若犯我，我必犯人', interpretation:'保持善良但有锋芒。不主动惹事，但面对无理的攻击或甩锅，必须第一时间有力回击。' },
   { id:5,  cat:'战略与斗争', quote:'宜将剩勇追穷寇，不可沽名学霸王', interpretation:'项目收尾或谈判关键时刻，不要为了所谓的"面子"或心软而留后患，要一鼓作气彻底解决问题。' },
@@ -351,7 +530,6 @@ const CARDS = [
   { id:54, cat:'精神与态度', quote:'普通的人，容易为过去和当前的情况所迷惑，以为今后也不过如此', interpretation:'远见卓识。不要被当下的惯性思维限制，要预判未来的趋势和突变。' },
 ];
 
-// 分类简写 → CSS 类名
 function catClass(cat) {
   if (cat.startsWith('战略')) return 'cat-战略';
   if (cat.startsWith('工作')) return 'cat-工作';
@@ -375,8 +553,9 @@ let history = [];
 let animating = false;
 
 // ==================== DOM ====================
-const $remaining    = document.getElementById('remaining');
+const $remaining     = document.getElementById('remaining');
 const $deckVisual   = document.getElementById('deckVisual');
+const $deckStack    = document.getElementById('deckStack');
 const $cardArea     = document.getElementById('cardArea');
 const $emptyState   = document.getElementById('emptyState');
 const $historySection = document.getElementById('historySection');
@@ -387,7 +566,7 @@ function updateUI() {
   $remaining.textContent = deck.length;
   const idle = $cardArea.style.display === 'none';
   $deckVisual.style.display = (deck.length > 0 && idle) ? '' : 'none';
-  $emptyState.style.display = (deck.length === 0 && idle) ? '' : 'none';
+  $emptyState.style.display  = (deck.length === 0 && idle) ? '' : 'none';
 }
 
 // ==================== 抽牌 ====================
@@ -403,7 +582,7 @@ function drawCard(count) {
 
   $deckVisual.style.display = 'none';
   $emptyState.style.display = 'none';
-  $cardArea.style.display = '';
+  $cardArea.style.display  = '';
 
   if (count === 1) {
     renderSingle(drawn[0]);
@@ -412,47 +591,51 @@ function drawCard(count) {
   }
   updateHistory();
   updateUI();
-  setTimeout(() => { animating = false; }, count === 1 ? 1000 : 600);
+  setTimeout(() => { animating = false; }, count === 1 ? 1100 : 600);
 }
 
-// 单张 - 翻牌效果
+// 单张 - 真·3D 翻牌
 function renderSingle(card) {
   const cc = catClass(card.cat);
   $cardArea.innerHTML = `
-    <div class="card-wrapper">
-      <div class="card-result" id="cardResult">
-        <div class="card-back">
-          <div class="card-back-inner">
-            <span class="card-back-icon">📖</span>
-            <span class="card-back-text">金 句 牌</span>
+    <div class="card-wrapper drawing" id="cardWrapper">
+      <div class="card-inner" id="cardInner">
+        <!-- 牌背 -->
+        <div class="card-face card-back-face">
+          <div class="back-content">
+            <span class="back-icon">📖</span>
+            <span class="back-title">金 句 牌</span>
+            <span class="back-sub">GOLDEN QUOTES</span>
           </div>
         </div>
-        <div class="card-face">
-          <span class="card-category ${cc}">${card.cat}</span>
-          <div class="card-quote">${card.quote}</div>
-          <div class="card-divider"></div>
-          <div class="card-interpretation">${card.interpretation}</div>
-          <span class="card-number">No.${String(card.id).padStart(2,'0')}</span>
+        <!-- 牌面 -->
+        <div class="card-face card-front-face">
+          <div class="card-front-inner">
+            <span class="card-category ${cc}">${card.cat}</span>
+            <div class="card-quote">${card.quote}</div>
+            <div class="card-divider"></div>
+            <div class="card-interpretation">${card.interpretation}</div>
+            <span class="card-number">No.${String(card.id).padStart(2,'0')}</span>
+          </div>
         </div>
       </div>
     </div>
     <button class="close-btn" onclick="closeResult()">收起</button>
   `;
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      const el = document.getElementById('cardResult');
-      if (el) el.classList.add('revealed');
-    }, 420);
-  });
+  // 等抽牌动画结束后翻牌
+  setTimeout(() => {
+    const inner = document.getElementById('cardInner');
+    if (inner) inner.classList.add('flipped');
+  }, 500);
 }
 
-// 多张 - 横向滚动
+// 多张
 function renderMulti(cards) {
   let html = '<div class="multi-cards">';
   cards.forEach((c, i) => {
     const cc = catClass(c.cat);
     html += `
-      <div class="mini-card" style="animation-delay:${i * 0.1}s">
+      <div class="mini-card" style="animation-delay:${i*0.1}s">
         <span class="mini-cat">${c.cat}</span>
         <div class="mini-quote">${c.quote}</div>
         <span class="mini-num">No.${String(c.id).padStart(2,'0')}</span>
@@ -469,6 +652,10 @@ function closeResult() {
 }
 
 function resetDeck() {
+  // 洗牌抖牌动画
+  $deckStack.classList.add('shuffling');
+  setTimeout(() => $deckStack.classList.remove('shuffling'), 500);
+
   deck = shuffle([...CARDS]);
   history = [];
   $cardArea.style.display = 'none';
@@ -511,7 +698,6 @@ function showToast(msg) {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
-
 updateUI();
 </script>
 </body>
