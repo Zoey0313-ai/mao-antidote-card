@@ -1,10 +1,11 @@
-const CACHE = 'card-draw-v1';
+const CACHE = 'card-draw-v2';
+const BASE = '/card-draw-pwa/';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'icons/icon-192.png',
+  BASE + 'icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {

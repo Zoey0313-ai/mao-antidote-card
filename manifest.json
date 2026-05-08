@@ -2,7 +2,7 @@
   "name": "金句抽卡",
   "short_name": "金句抽卡",
   "description": "随机抽取职场金句，每天一句，思维升级",
-  "start_url": "/index.html",
+  "start_url": "/card-draw-pwa/",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
