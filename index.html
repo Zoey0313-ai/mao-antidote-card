@@ -22,38 +22,42 @@
     <div class="subtitle">剩余 <span id="remaining">54</span> 张 / 共 54 张</div>
   </div>
 
-  <div class="page active" id="pageDraw">
-    <div class="deck-visual" id="deckVisual">
-      <div class="deck-stack" id="deckStack">
-        <div class="deck-base"></div>
-        <div class="deck-base"></div>
-        <div class="deck-base">
-          <span class="deck-icon">&#128218;</span>
-          <span class="deck-label">金句牌组</span>
+  <div class="page-container">
+    <div class="page active" id="pageDraw">
+      <div class="draw-content">
+        <div class="deck-visual" id="deckVisual">
+          <div class="deck-stack" id="deckStack">
+            <div class="deck-base"></div>
+            <div class="deck-base"></div>
+            <div class="deck-base">
+              <span class="deck-icon">&#128218;</span>
+              <span class="deck-label">金句牌组</span>
+            </div>
+          </div>
+          <span class="deck-hint">点击下方按钮抽取智慧</span>
+        </div>
+
+        <div class="card-area" id="cardArea" style="display:none;"></div>
+
+        <div class="empty-text" id="emptyState" style="display:none;">
+          全部抽完啦<br><span style="font-size:12px;color:rgba(0,0,0,0.25);">点击重新洗牌开始新一轮</span>
         </div>
       </div>
-      <span class="deck-hint">点击下方按钮抽取智慧</span>
-    </div>
 
-    <div class="card-area" id="cardArea" style="display:none;"></div>
-
-    <div class="empty-text" id="emptyState" style="display:none;">
-      全部抽完啦<br><span style="font-size:12px;color:rgba(0,0,0,0.25);">点击重新洗牌开始新一轮</span>
-    </div>
-
-    <div class="actions" id="actionsArea">
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="drawCard(1)">抽一张</button>
-        <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
-        <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
+      <div class="actions" id="actionsArea">
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="drawCard(1)">抽一张</button>
+          <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
+          <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
+        </div>
+        <button class="btn-reset" onclick="resetDeck()">&#8635; 重新洗牌</button>
       </div>
-      <button class="btn-reset" onclick="resetDeck()">&#8635; 重新洗牌</button>
     </div>
-  </div>
 
-  <div class="page" id="pageHistory">
-    <div class="history-list" id="historyList">
-      <div class="history-empty" id="historyEmpty">还没有抽过卡<br><span style="font-size:12px;">去抽几张吧 &#10024;</span></div>
+    <div class="page" id="pageHistory">
+      <div class="history-list" id="historyList">
+        <div class="history-empty" id="historyEmpty">还没有抽过卡<br><span style="font-size:12px;">去抽几张吧 &#10024;</span></div>
+      </div>
     </div>
   </div>
 
