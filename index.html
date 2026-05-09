@@ -2,703 +2,75 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="金句抽卡">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#f5f5f7">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
   <title>金句抽卡</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-      background: radial-gradient(ellipse at 30% 20%, #1e1e3a 0%, #1a1a2e 40%, #13132b 100%);
-      min-height: 100vh;
-      color: #fff;
-      overflow-x: hidden;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .container {
-      max-width: 420px;
-      margin: 0 auto;
-      padding: 48px 20px 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ===== Header ===== */
-    .header { text-align:center; margin-bottom: 28px; }
-    .title {
-      display:block; font-size:28px; font-weight:800;
-      background: linear-gradient(135deg, #e8d5b7 20%, #f0e6c8 50%, #d4a24e 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 5px;
-      margin-bottom: 8px;
-      filter: drop-shadow(0 2px 8px rgba(201,169,110,0.35));
-    }
-    .subtitle { font-size:12px; color:rgba(255,255,255,0.32); }
-
-    /* ===== Deck Visual ===== */
-    .deck-visual {
-      margin-bottom: 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
-    .deck-stack { position:relative; width:180px; height:240px; margin-bottom:14px; }
-
-    /* 牌堆底部底座 */
-    .deck-base {
-      position:absolute; width:160px; height:224px;
-      border-radius:14px;
-      background: linear-gradient(160deg, #2a1f5c, #1b1545);
-      border: 1.5px solid rgba(201,169,110,0.18);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-    .deck-base:nth-child(1) { top:0; left:10px; z-index:1; }
-    .deck-base:nth-child(2) { top:2px; left:10px; z-index:2; }
-    .deck-base:nth-child(3) {
-      top:4px; left:10px; z-index:3;
-      background: linear-gradient(160deg, #3d2b7a, #24185a);
-      border-color: rgba(201,169,110,0.35);
-      display:flex; align-items:center; justify-content:center;
-      flex-direction:column; gap:6px;
-    }
-    .deck-icon { font-size:32px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4)); }
-    .deck-label { font-size:10px; color:rgba(232,213,183,0.6); letter-spacing:3px; }
-    .deck-hint {
-      font-size:11px; color:rgba(255,255,255,0.25);
-      margin-top:2px;
-    }
-
-    /* ===== Shuffle animation ===== */
-    @keyframes shuffleDeck {
-      0%   { transform: rotate(0deg); }
-      20%  { transform: rotate(-6deg) translateX(-4px); }
-      40%  { transform: rotate(5deg) translateX(4px); }
-      60%  { transform: rotate(-4deg) translateX(-3px); }
-      80%  { transform: rotate(3deg) translateX(2px); }
-      100% { transform: rotate(0deg); }
-    }
-    .deck-stack.shuffling .deck-base:nth-child(3) {
-      animation: shuffleDeck 0.5s ease-in-out;
-    }
-
-    /* ===== Card Area ===== */
-    .card-area {
-      width:100%; display:flex; flex-direction:column;
-      align-items:center; margin-bottom:28px;
-    }
-
-    /* ===== Single Card 3D Flip ===== */
-    .card-wrapper {
-      width:100%;
-      perspective: 1200px;
-      margin-bottom:16px;
-    }
-    .card-inner {
-      width:100%;
-      position:relative;
-      transform-style:preserve-3d;
-      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor:default;
-    }
-    .card-inner.flipped {
-      transform: rotateY(180deg);
-    }
-
-    /* Card face - shared */
-    .card-face {
-      width:100%;
-      border-radius:18px;
-      backface-visibility:hidden;
-      -webkit-backface-visibility:hidden;
-      position:absolute;
-      top:0; left:0;
-      overflow:hidden;
-    }
-
-    /* CARD BACK (金句牌背) */
-    .card-back-face {
-      position:relative;
-      width:100%;
-      background:
-        linear-gradient(135deg, #2a1f5c 0%, #1b1545 50%, #130e2a 100%);
-      border: 1.5px solid rgba(201,169,110,0.3);
-      box-shadow:
-        0 14px 52px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(201,169,110,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.06);
-      aspect-ratio: 5/7;
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-    }
-
-    /* 牌背装饰花纹 */
-    .card-back-face::before {
-      content:'';
-      position:absolute; inset:8px;
-      border: 1px solid rgba(201,169,110,0.15);
-      border-radius:13px;
-      pointer-events:none;
-    }
-    .card-back-face::after {
-      content:'';
-      position:absolute; inset:14px;
-      border: 0.5px solid rgba(201,169,110,0.08);
-      border-radius:11px;
-      pointer-events:none;
-    }
-    .back-content {
-      display:flex; flex-direction:column; align-items:center; gap:10px;
-      z-index:1;
-    }
-    .back-icon { font-size:38px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
-    .back-title {
-      font-size:14px;
-      background: linear-gradient(135deg, #e8d5b7, #d4a24e);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      letter-spacing:4px; font-weight:700;
-    }
-    .back-sub {
-      font-size:9px; color:rgba(232,213,183,0.35);
-      letter-spacing:2px; margin-top:2px;
-    }
-
-    /* CARD FRONT (金句正面) */
-    .card-front-face {
-      transform: rotateY(180deg);
-      position:relative;
-      width:100%;
-      background:
-        linear-gradient(170deg, #fffef7 0%, #f5f0e0 40%, #ede6d3 100%);
-      border: 1.5px solid rgba(201,169,110,0.5);
-      box-shadow:
-        0 14px 52px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(201,169,110,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      aspect-ratio: 5/7;
-      padding: 22px 18px 18px;
-      display:flex; flex-direction:column;
-      overflow:hidden;
-    }
-
-    /* 纸纹效果 */
-    .card-front-face::before {
-      content:'';
-      position:absolute; inset:0;
-      background:
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 2px,
-          rgba(201,169,110,0.03) 2px,
-          rgba(201,169,110,0.03) 4px
-        );
-      border-radius:18px;
-      pointer-events:none;
-    }
-
-    /* 牌面边框装饰 */
-    .card-front-face::after {
-      content:'';
-      position:absolute; inset:6px;
-      border: 0.5px solid rgba(201,169,110,0.2);
-      border-radius:14px;
-      pointer-events:none;
-    }
-
-    .card-front-inner {
-      position:relative; z-index:1;
-      display:flex; flex-direction:column;
-      height:100%;
-    }
-
-    /* 顶部：分类标签 */
-    .card-category {
-      display:inline-flex; align-items:center; gap:4px;
-      padding: 3px 10px;
-      border-radius:20px;
-      font-size:10px;
-      font-weight:600;
-      letter-spacing:1.5px;
-      align-self:flex-start;
-      margin-bottom:14px;
-    }
-    .cat-战略 { background:rgba(231,76,60,0.12); color:#c0392b; }
-    .cat-工作 { background:rgba(41,128,185,0.12); color:#1a6fa0; }
-    .cat-哲学 { background:rgba(39,174,96,0.12); color:#1e8449; }
-    .cat-精神 { background:rgba(142,68,173,0.12); color:#7d3c98; }
-
-    /* 金句正文 */
-    .card-quote {
-      font-size:17px;
-      font-weight:700;
-      color:#1a1a2e;
-      line-height:1.65;
-      margin-bottom:16px;
-      padding-left:12px;
-      border-left: 3px solid;
-      border-image: linear-gradient(to bottom, #c9a96e, #e8d5b7) 1;
-      flex:1;
-    }
-    .cat-战略 .card-quote { border-image: linear-gradient(to bottom, #e74c3c, #f1948a) 1; }
-    .cat-工作 .card-quote { border-image: linear-gradient(to bottom, #2980b9, #85c1e9) 1; }
-    .cat-哲学 .card-quote { border-image: linear-gradient(to bottom, #27ae60, #82e0aa) 1; }
-
-    /* 分割线 */
-    .card-divider {
-      height:1px;
-      background: linear-gradient(90deg, rgba(201,169,110,0.3), rgba(201,169,110,0.08));
-      margin-bottom:14px;
-    }
-
-    /* 解读 */
-    .card-interpretation {
-      font-size:12.5px;
-      color:#555;
-      line-height:1.75;
-      position:relative;
-      padding-left:10px;
-    }
-    .card-interpretation::before {
-      content:'💡';
-      position:absolute; left:-2px; top:-1px;
-      font-size:10px;
-    }
-
-    /* 编号 */
-    .card-number {
-      align-self:flex-end;
-      font-size:10px;
-      color:rgba(26,26,46,0.18);
-      font-weight:700;
-      letter-spacing:1px;
-      margin-top:8px;
-    }
-
-    /* ===== Draw animation ===== */
-    @keyframes drawCard {
-      0%   { opacity:0; transform:translateY(60px) rotate(-3deg) scale(0.85); }
-      60%  { opacity:1; transform:translateY(-8px) rotate(0.5deg) scale(1.02); }
-      100% { transform:translateY(0) rotate(0) scale(1); }
-    }
-    .card-wrapper.drawing { animation: drawCard 0.55s cubic-bezier(0.34,1.56,0.64,1) both; }
-
-    /* ===== Multi Cards ===== */
-    .multi-cards {
-      display:flex; gap:10px; flex-wrap:nowrap;
-      overflow-x:auto; width:100%;
-      padding:4px 0 16px;
-      -webkit-overflow-scrolling:touch;
-    }
-    .multi-cards::-webkit-scrollbar { display:none; }
-    .mini-card {
-      flex:0 0 auto; width:140px;
-      background: linear-gradient(170deg, #fffef7, #f5f0e0);
-      border-radius:12px; padding:14px 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 0.5px rgba(201,169,110,0.3);
-      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-      position:relative;
-      overflow:hidden;
-    }
-    .mini-card::before {
-      content:'';
-      position:absolute; inset:4px;
-      border:0.5px solid rgba(201,169,110,0.15);
-      border-radius:9px; pointer-events:none;
-    }
-    @keyframes popIn {
-      from { opacity:0; transform:scale(0.5) translateY(24px); }
-      to   { opacity:1; transform:none; }
-    }
-    .mini-cat { font-size:9px; color:#999; margin-bottom:6px; display:block; letter-spacing:1px; }
-    .mini-quote { font-size:12px; font-weight:700; color:#1a1a2e; line-height:1.5; }
-    .mini-num { font-size:9px; color:rgba(26,26,46,0.2); margin-top:8px; display:block; }
-
-    /* ===== Close btn ===== */
-    .close-btn {
-      padding:10px 36px;
-      background:rgba(255,255,255,0.07);
-      border-radius:24px;
-      color:rgba(255,255,255,0.4);
-      font-size:13px;
-      cursor:pointer;
-      border:none;
-      transition: background 0.15s;
-      margin-top:8px;
-    }
-    .close-btn:active { background:rgba(255,255,255,0.14); }
-
-    /* ===== Empty ===== */
-    .empty-text {
-      font-size:18px; color:rgba(255,255,255,0.28);
-      margin-bottom:28px; text-align:center;
-      line-height:1.8;
-    }
-
-    /* ===== Buttons ===== */
-    .actions { width:100%; margin-bottom:28px; }
-    .btn-row { display:flex; gap:9px; margin-bottom:10px; }
-    .btn {
-      flex:1; height:50px; display:flex; align-items:center; justify-content:center;
-      border-radius:14px; font-size:15.5px; font-weight:700;
-      letter-spacing:1.5px;
-      cursor:pointer; border:none;
-      transition: transform 0.1s, box-shadow 0.15s;
-      user-select:none;
-    }
-    .btn:active { transform:scale(0.95); }
-    .btn-primary {
-      background: linear-gradient(135deg, #e8d5b7, #c9a96e);
-      color:#1a1a2e;
-      box-shadow: 0 4px 18px rgba(201,169,110,0.4);
-    }
-    .btn-primary:active { box-shadow: 0 2px 8px rgba(201,169,110,0.5); }
-    .btn-secondary {
-      background:rgba(232,213,183,0.1);
-      color:#e8d5b7;
-      border: 1.5px solid rgba(232,213,183,0.22);
-    }
-    .btn-outline {
-      background:rgba(255,255,255,0.04);
-      color:rgba(255,255,255,0.5);
-      border:1.5px solid rgba(255,255,255,0.1);
-    }
-    .btn-reset {
-      width:100%; height:42px; display:flex; align-items:center; justify-content:center;
-      border-radius:14px; font-size:12.5px;
-      color:rgba(255,255,255,0.28);
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.06);
-      cursor:pointer; letter-spacing:1px;
-      transition: background 0.15s;
-    }
-    .btn-reset:active { background:rgba(255,255,255,0.07); }
-
-    /* ===== History ===== */
-    .history-section {
-      width:100%;
-      background:rgba(255,255,255,0.025);
-      border-radius:16px;
-      padding:14px 14px;
-      border:1px solid rgba(255,255,255,0.05);
-    }
-    .history-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:10px;
-    }
-    .history-title {
-      font-size:11px; color:rgba(255,255,255,0.35);
-      font-weight:600; letter-spacing:1px;
-    }
-    .history-list { max-height:200px; overflow-y:auto; }
-    .history-list::-webkit-scrollbar { width:2px; }
-    .history-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
-    .history-item {
-      display:flex; align-items:flex-start;
-      padding:9px 6px;
-      border-bottom:1px solid rgba(255,255,255,0.04);
-      gap:10px;
-    }
-    .history-item:last-child { border-bottom:none; }
-    .history-num {
-      font-size:10px; color:rgba(255,255,255,0.18);
-      width:20px; flex-shrink:0; padding-top:1px;
-      font-weight:600;
-    }
-    .history-info { flex:1; min-width:0; }
-    .history-cat { font-size:9px; color:rgba(255,255,255,0.25); margin-bottom:2px; }
-    .history-quote {
-      font-size:12.5px; color:rgba(255,255,255,0.65);
-      font-weight:500; line-height:1.45;
-    }
-  </style>
 </head>
 <body>
-<div class="container">
-  <!-- Header -->
+<div class="app">
   <div class="header">
-    <span class="title">金句抽卡</span>
-    <span class="subtitle">剩余 <span id="remaining">54</span> 张 / 共 54 张</span>
+    <div class="header-top">
+      <span class="header-icon">&#128218;</span>
+      <span class="title">金句抽卡</span>
+    </div>
+    <div class="subtitle">剩余 <span id="remaining">54</span> 张 / 共 54 张</div>
   </div>
 
-  <!-- Deck visual -->
-  <div class="deck-visual" id="deckVisual">
-    <div class="deck-stack" id="deckStack">
-      <div class="deck-base"></div>
-      <div class="deck-base"></div>
-      <div class="deck-base">
-        <span class="deck-icon">📖</span>
-        <span class="deck-label">金句牌组</span>
+  <div class="page active" id="pageDraw">
+    <div class="deck-visual" id="deckVisual">
+      <div class="deck-stack" id="deckStack">
+        <div class="deck-base"></div>
+        <div class="deck-base"></div>
+        <div class="deck-base">
+          <span class="deck-icon">&#128218;</span>
+          <span class="deck-label">金句牌组</span>
+        </div>
       </div>
+      <span class="deck-hint">点击下方按钮抽取智慧</span>
     </div>
-    <span class="deck-hint">点击下方按钮抽取智慧 ✨</span>
-  </div>
 
-  <!-- Card result area -->
-  <div class="card-area" id="cardArea" style="display:none;"></div>
+    <div class="card-area" id="cardArea" style="display:none;"></div>
 
-  <!-- Empty state -->
-  <div class="empty-text" id="emptyState" style="display:none;">
-    全部抽完啦 🎉<br><span style="font-size:13px;color:rgba(255,255,255,0.22);">点击重新洗牌开始新一轮</span>
-  </div>
-
-  <!-- Buttons -->
-  <div class="actions">
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="drawCard(1)">抽一张</button>
-      <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
-      <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
+    <div class="empty-text" id="emptyState" style="display:none;">
+      全部抽完啦<br><span style="font-size:12px;color:rgba(0,0,0,0.25);">点击重新洗牌开始新一轮</span>
     </div>
-    <button class="btn-reset" onclick="resetDeck()">↻ 重新洗牌</button>
+
+    <div class="actions" id="actionsArea">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="drawCard(1)">抽一张</button>
+        <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
+        <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
+      </div>
+      <button class="btn-reset" onclick="resetDeck()">&#8635; 重新洗牌</button>
+    </div>
   </div>
 
-  <!-- History -->
-  <div class="history-section" id="historySection" style="display:none;">
-    <div class="history-header">
-      <span class="history-title">已抽记录 <span id="historyCount">0</span> / 54</span>
+  <div class="page" id="pageHistory">
+    <div class="history-list" id="historyList">
+      <div class="history-empty" id="historyEmpty">还没有抽过卡<br><span style="font-size:12px;">去抽几张吧 &#10024;</span></div>
     </div>
-    <div class="history-list" id="historyList"></div>
   </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" id="navDraw" onclick="switchPage('draw')">
+      <span class="nav-icon">&#127183;</span>
+      <span class="nav-label">抽卡</span>
+    </button>
+    <button class="nav-item" id="navHistory" onclick="switchPage('history')">
+      <span class="nav-icon">&#128211;</span>
+      <span class="nav-label">记录</span>
+    </button>
+  </div>
+
+  <div class="toast" id="toast"></div>
 </div>
 
-<script>
-// ==================== 卡牌数据 ====================
-const CARDS = [
-  { id:1,  cat:'战略与斗争', quote:'枪杆子里面出政权', interpretation:'在职场中，核心业务能力和不可替代的硬技能，就是你的"枪杆子"。' },
-  { id:2,  cat:'战略与斗争', quote:'一切反动派都是纸老虎', interpretation:'面对看似强大的竞争对手或巨大的困难，要在心理上藐視它，不要被它的气势吓倒。' },
-  { id:3,  cat:'战略与斗争', quote:'战略上藐视敌人，战术上重视敌人', interpretation:'宏观上要有必胜的信心，但在具体执行每一个PPT、每一行代码时，要极度严谨。' },
-  { id:4,  cat:'战略与斗争', quote:'人不犯我，我不犯人；人若犯我，我必犯人', interpretation:'保持善良但有锋芒。不主动惹事，但面对无理的攻击或甩锅，必须第一时间有力回击。' },
-  { id:5,  cat:'战略与斗争', quote:'宜将剩勇追穷寇，不可沽名学霸王', interpretation:'项目收尾或谈判关键时刻，不要为了所谓的"面子"或心软而留后患，要一鼓作气彻底解决问题。' },
-  { id:6,  cat:'战略与斗争', quote:'集中优势兵力，各个歼灭敌人', interpretation:'资源有限时，不要撒胡椒面。将所有精力集中在一个核心痛点或爆款产品上，单点突破。' },
-  { id:7,  cat:'战略与斗争', quote:'伤其十指，不如断其一指', interpretation:'做十件平庸的事，不如把一件关键的事做到极致。' },
-  { id:8,  cat:'战略与斗争', quote:'打得赢就打，打不赢就走', interpretation:'灵活应变。发现赛道错误或项目无望时，及时止损转型，不要死磕。' },
-  { id:9,  cat:'战略与斗争', quote:'不打无准备之仗，不打无把握之仗', interpretation:'无论是跳槽还是创业，做好充分的调研和预案，永远不要裸辞或盲目跟风。' },
-  { id:10, cat:'战略与斗争', quote:'兵民是胜利之本', interpretation:'对于管理者而言，基层员工和用户口碑是成功的基石，不可忽视。' },
-  { id:11, cat:'战略与斗争', quote:'战争的伟力之最深厚的根源，存在于民众之中', interpretation:'产品的生命力来自于最广泛的用户需求，而非老板的个人喜好。' },
-  { id:12, cat:'战略与斗争', quote:'利用矛盾，争取多数，反对少数，各个击破', interpretation:'在复杂的办公室政治中，团结大多数中间派，孤立极少数捣乱者。' },
-  { id:13, cat:'战略与斗争', quote:'以斗争求团结则团结存，以退让求团结则团结亡', interpretation:'真正的团队团结是建立在原则和规则之上的，一味做老好人反而会导致团队涣散。' },
-  { id:14, cat:'战略与斗争', quote:'政策和策略是党的生命', interpretation:'方向比努力更重要。公司的战略方向错了，执行力越强，死得越快。' },
-  { id:15, cat:'战略与斗争', quote:'下定决心，不怕牺牲，排除万难，去争取胜利', interpretation:'创业或攻坚期的座右铭。既然选择了远方，便只顾风雨兼程。' },
-  { id:16, cat:'战略与斗争', quote:'星星之火，可以燎原', interpretation:'不要低估微小的创新或初创团队的力量，只要模式对，爆发是迟早的事。' },
-  { id:17, cat:'战略与斗争', quote:'前途是光明的，道路是曲折的', interpretation:'在低谷期给自己打气。接受当下的挫折，因为这是通往成功的必经之路。' },
-  { id:18, cat:'工作与领导', quote:'没有调查，就没有发言权', interpretation:'不做"拍脑袋"决策。在发表意见前，先掌握一手数据和事实。' },
-  { id:19, cat:'工作与领导', quote:'从群众中来，到群众中去', interpretation:'好的方案不是闭门造车出来的，而是收集一线反馈，优化后再推广回去。' },
-  { id:20, cat:'工作与领导', quote:'实事求是', interpretation:'尊重客观规律，不唯书、不唯上、只唯实。承认问题，才能解决问题。' },
-  { id:21, cat:'工作与领导', quote:'实践、认识、再实践、再认识', interpretation:'迭代思维。不要等完美了再出发，先做出来（MVP），根据反馈不断修正。' },
-  { id:22, cat:'工作与领导', quote:'政治路线确定之后，干部就是决定的因素', interpretation:'战略定好后，选对人至关重要。执行力取决于关键岗位的负责人。' },
-  { id:23, cat:'工作与领导', quote:'领导者的责任，归结起来，主要地是出主意、用干部两件事', interpretation:'管理者的核心职能：定战略（出主意）和搭班子（用干部）。' },
-  { id:24, cat:'工作与领导', quote:'必须善于识别干部……看全部历史和全部工作', interpretation:'识人用人要看长期表现和关键时刻的担当，不要被一时的表现迷惑。' },
-  { id:25, cat:'工作与领导', quote:'凡属正确的领导，必须是从群众中来，到群众中去', interpretation:'避免"自嗨式"管理，决策要接地气，执行要有人气。' },
-  { id:26, cat:'工作与领导', quote:'我们看问题，必须从整体上、从各个方面去看', interpretation:'系统性思维。不要头痛医头，要看清问题的全貌和关联性。' },
-  { id:27, cat:'工作与领导', quote:'如果有问题，就要从个别中看出普遍性', interpretation:'复盘能力。从一个具体的错误中，总结出通用的流程漏洞，防止再犯。' },
-  { id:28, cat:'工作与领导', quote:'一切为群众的工作都要从群众的需要出发', interpretation:'用户思维。做产品、做服务，先问自己：这真的是用户想要的吗？' },
-  { id:29, cat:'工作与领导', quote:'忘记发展经济……企图从收缩开支去解决财政困难……是不能解决任何问题的', interpretation:'开源比节流更重要。单纯靠省钱省不出未来，要靠创造价值来解决问题。' },
-  { id:30, cat:'工作与领导', quote:'上级机关不要不分轻重缓急地……指定下级机关做很多项工作', interpretation:'拒绝形式主义。管理者不要给下属制造无意义的忙碌，聚焦核心KPI。' },
-  { id:31, cat:'工作与领导', quote:'在一切工作中，命令主义是错误的', interpretation:'管理不是发号施令。要引导团队理解目标，而不是机械地执行命令。' },
-  { id:32, cat:'工作与领导', quote:'我们历来不打无准备无把握之仗', interpretation:'风险控制。在投入大笔资金或时间前，先做可行性分析。' },
-  { id:33, cat:'工作与领导', quote:'从最坏的可能性着想，总不吃亏', interpretation:'底线思维。做计划时先想好"如果失败了怎么办"，留好退路。' },
-  { id:34, cat:'工作与领导', quote:'错误常常是正确的向导', interpretation:'成长型思维。不要害怕犯错，每一个错误都是一次学习的机会。' },
-  { id:35, cat:'工作与领导', quote:'我们决不能一见成绩就自满自足起来……天天要洗脸，天天要扫地', interpretation:'自我反省。保持空杯心态，定期复盘，清理思想和工作上的灰尘。' },
-  { id:36, cat:'哲学与认知', quote:'世上决没有无缘无故的爱，也没有无缘无故的恨', interpretation:'利益分析。看懂人际关系的本质，理解他人行为背后的动机和利益诉求。' },
-  { id:37, cat:'哲学与认知', quote:'一切结论产生于调查情况的末尾，而不是在它的先头', interpretation:'避免偏见。不要让结论先行，让数据和事实引导你得出结论。' },
-  { id:38, cat:'哲学与认知', quote:'"实事"就是客观存在着的一切事物……"求"就是我们去研究', interpretation:'科学精神。探求事物的内部规律，而不是停留在表面现象。' },
-  { id:39, cat:'哲学与认知', quote:'真正的理论……就是从客观实际抽出来又在客观实际中得到了证明的理论', interpretation:'知行合一。理论必须能指导实践，否则就是纸上谈兵。' },
-  { id:40, cat:'哲学与认知', quote:'我们讨论问题，应当从实际出发，不是从定义出发', interpretation:'解决真问题。不要被概念和术语束缚，关注现实中的具体痛点。' },
-  { id:41, cat:'哲学与认知', quote:'矛盾着的各方面不能孤立的存在', interpretation:'辩证法。看到危机的两面性，在困难中发现机遇，在顺境中警惕风险。' },
-  { id:42, cat:'哲学与认知', quote:'事情不是矛盾双方互相依存就完了，更重要的，还在于矛盾着的事物的互相转化', interpretation:'动态眼光。劣势可以转化为优势，被动可以转化为主动，关键在于创造条件。' },
-  { id:43, cat:'哲学与认知', quote:'一切过程都有始有终，一切过程都转化为它们的对立物', interpretation:'周期思维。没有永远的红利，也没有永远的低谷，要预判转折点。' },
-  { id:44, cat:'哲学与认知', quote:'对立统一……斗争则是绝对的', interpretation:'拥抱变化。冲突和变化是常态，要在动态平衡中寻求发展。' },
-  { id:45, cat:'哲学与认知', quote:'思想等等是主观的东西，做或行动是主观见之于客观的东西', interpretation:'执行力。想法再好，只有落地执行变成了现实，才算数。' },
-  { id:46, cat:'哲学与认知', quote:'一切根据符合于客观事实的思想是正确的思想', interpretation:'校准认知。定期核对你的认知与现实世界是否一致，避免刻舟求剑。' },
-  { id:47, cat:'哲学与认知', quote:'武器是战争的重要的因素，但不是决定的因素，决定的因素是人不是物', interpretation:'团队文化。工具和技术很重要，但拥有激情和信念的团队才是核心竞争力。' },
-  { id:48, cat:'精神与态度', quote:'群众是真正的英雄，而我们自己则往往是幼稚可笑的', interpretation:'保持谦卑。承认个人的局限性，尊重集体的智慧。' },
-  { id:49, cat:'精神与态度', quote:'没有满腔的热忱……没有放下臭架子、甘当小学生的精神，是一定不能做，也一定做不好的', interpretation:'空杯心态。想要进入新领域，先忘掉过去的资历，从头学起。' },
-  { id:50, cat:'精神与态度', quote:'共产党员对任何事情都要问一个为什么……绝对不应盲从', interpretation:'独立思考。不人云亦云，对信息和指令保持批判性思维。' },
-  { id:51, cat:'精神与态度', quote:'学习的敌人是自己的满足，要认真学习一点东西，必须从不自满开始', interpretation:'终身学习。在这个快速变化的时代，自满是掉队的开始。' },
-  { id:52, cat:'精神与态度', quote:'有许多人，"下车伊始"，就哇喇哇喇地发议论……其实这种人十个有十个失败', interpretation:'沉稳内敛。刚到一个新环境，先多看少说，了解情况后再发表意见。' },
-  { id:53, cat:'精神与态度', quote:'一个人做事只凭动机，不问效果……病人吃死了多少他是不管的', interpretation:'结果导向。苦劳不等于功劳，用结果说话，对最终效果负责。' },
-  { id:54, cat:'精神与态度', quote:'普通的人，容易为过去和当前的情况所迷惑，以为今后也不过如此', interpretation:'远见卓识。不要被当下的惯性思维限制，要预判未来的趋势和突变。' },
-];
-
-function catClass(cat) {
-  if (cat.startsWith('战略')) return 'cat-战略';
-  if (cat.startsWith('工作')) return 'cat-工作';
-  if (cat.startsWith('哲学')) return 'cat-哲学';
-  return 'cat-精神';
-}
-
-// ==================== 洗牌 ====================
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-// ==================== 状态 ====================
-let deck = shuffle([...CARDS]);
-let history = [];
-let animating = false;
-
-// ==================== DOM ====================
-const $remaining     = document.getElementById('remaining');
-const $deckVisual   = document.getElementById('deckVisual');
-const $deckStack    = document.getElementById('deckStack');
-const $cardArea     = document.getElementById('cardArea');
-const $emptyState   = document.getElementById('emptyState');
-const $historySection = document.getElementById('historySection');
-const $historyCount = document.getElementById('historyCount');
-const $historyList  = document.getElementById('historyList');
-
-function updateUI() {
-  $remaining.textContent = deck.length;
-  const idle = $cardArea.style.display === 'none';
-  $deckVisual.style.display = (deck.length > 0 && idle) ? '' : 'none';
-  $emptyState.style.display  = (deck.length === 0 && idle) ? '' : 'none';
-}
-
-// ==================== 抽牌 ====================
-function drawCard(count) {
-  if (animating) return;
-  if (deck.length < count) {
-    showToast(deck.length === 0 ? '已抽完，请重新洗牌' : `剩余${deck.length}张，不够${count}张`);
-    return;
-  }
-  animating = true;
-  const drawn = deck.splice(deck.length - count, count).reverse();
-  history = [...drawn, ...history];
-
-  $deckVisual.style.display = 'none';
-  $emptyState.style.display = 'none';
-  $cardArea.style.display  = '';
-
-  if (count === 1) {
-    renderSingle(drawn[0]);
-  } else {
-    renderMulti(drawn);
-  }
-  updateHistory();
-  updateUI();
-  setTimeout(() => { animating = false; }, count === 1 ? 1100 : 600);
-}
-
-// 单张 - 真·3D 翻牌
-function renderSingle(card) {
-  const cc = catClass(card.cat);
-  $cardArea.innerHTML = `
-    <div class="card-wrapper drawing" id="cardWrapper">
-      <div class="card-inner" id="cardInner">
-        <!-- 牌背 -->
-        <div class="card-face card-back-face">
-          <div class="back-content">
-            <span class="back-icon">📖</span>
-            <span class="back-title">金 句 牌</span>
-            <span class="back-sub">GOLDEN QUOTES</span>
-          </div>
-        </div>
-        <!-- 牌面 -->
-        <div class="card-face card-front-face">
-          <div class="card-front-inner">
-            <span class="card-category ${cc}">${card.cat}</span>
-            <div class="card-quote">${card.quote}</div>
-            <div class="card-divider"></div>
-            <div class="card-interpretation">${card.interpretation}</div>
-            <span class="card-number">No.${String(card.id).padStart(2,'0')}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <button class="close-btn" onclick="closeResult()">收起</button>
-  `;
-  // 等抽牌动画结束后翻牌
-  setTimeout(() => {
-    const inner = document.getElementById('cardInner');
-    if (inner) inner.classList.add('flipped');
-  }, 500);
-}
-
-// 多张
-function renderMulti(cards) {
-  let html = '<div class="multi-cards">';
-  cards.forEach((c, i) => {
-    const cc = catClass(c.cat);
-    html += `
-      <div class="mini-card" style="animation-delay:${i*0.1}s">
-        <span class="mini-cat">${c.cat}</span>
-        <div class="mini-quote">${c.quote}</div>
-        <span class="mini-num">No.${String(c.id).padStart(2,'0')}</span>
-      </div>`;
-  });
-  html += '</div><button class="close-btn" onclick="closeResult()">收起</button>';
-  $cardArea.innerHTML = html;
-}
-
-function closeResult() {
-  $cardArea.style.display = 'none';
-  $cardArea.innerHTML = '';
-  updateUI();
-}
-
-function resetDeck() {
-  // 洗牌抖牌动画
-  $deckStack.classList.add('shuffling');
-  setTimeout(() => $deckStack.classList.remove('shuffling'), 500);
-
-  deck = shuffle([...CARDS]);
-  history = [];
-  $cardArea.style.display = 'none';
-  $cardArea.innerHTML = '';
-  updateHistory();
-  updateUI();
-  showToast('已重新洗牌 🎴');
-}
-
-// ==================== 历史 ====================
-function updateHistory() {
-  if (history.length === 0) { $historySection.style.display = 'none'; return; }
-  $historySection.style.display = '';
-  $historyCount.textContent = history.length;
-  $historyList.innerHTML = history.map(c => `
-    <div class="history-item">
-      <span class="history-num">${String(c.id).padStart(2,'0')}</span>
-      <div class="history-info">
-        <div class="history-cat">${c.cat}</div>
-        <div class="history-quote">${c.quote}</div>
-      </div>
-    </div>`).join('');
-}
-
-// ==================== Toast ====================
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.textContent = msg;
-  Object.assign(t.style, {
-    position:'fixed', top:'72px', left:'50%', transform:'translateX(-50%)',
-    background:'rgba(0,0,0,0.72)', color:'#fff', padding:'9px 22px',
-    borderRadius:'20px', fontSize:'13px', zIndex:'9999',
-    transition:'opacity 0.3s', opacity:'1', whiteSpace:'nowrap'
-  });
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 300); }, 1800);
-}
-
-// ==================== Service Worker ====================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-updateUI();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
