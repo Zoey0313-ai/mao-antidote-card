@@ -5,50 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="金句抽卡">
+  <meta name="apple-mobile-web-app-title" content="教员解药">
   <meta name="theme-color" content="#f5f5f7">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>金句抽卡</title>
+  <title>教员解药</title>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="header-top">
-      <span class="header-icon">&#128218;</span>
-      <span class="title">金句抽卡</span>
+    <div class="header-title-block">
+      <span class="header-icon">&#128138;</span>
+      <span class="title">教员解药</span>
     </div>
-    <div class="subtitle">剩余 <span id="remaining">54</span> 张 / 共 54 张</div>
+    <div class="subtitle" id="emotionHint">随机模式 (130张)</div>
   </div>
 
   <div class="page-container">
     <div class="page active" id="pageDraw">
       <div class="draw-content">
-        <div class="deck-visual" id="deckVisual">
-          <div class="deck-stack" id="deckStack">
-            <div class="deck-base"></div>
-            <div class="deck-base"></div>
-            <div class="deck-base">
-              <span class="deck-icon">&#128218;</span>
-              <span class="deck-label">金句牌组</span>
-            </div>
+
+        <div class="mode-section">
+          <div class="mode-card" onclick="switchMode('random')">
+            <div class="mode-card-icon">&#127183;</div>
+            <div class="mode-card-title">随机抽卡</div>
+            <div class="mode-card-desc">随机一张来点儿灵感</div>
           </div>
-          <span class="deck-hint">点击下方按钮抽取智慧</span>
+          <div class="mode-card" onclick="switchMode('emotion')">
+            <div class="mode-card-icon">&#128138;</div>
+            <div class="mode-card-title">情绪索引</div>
+            <div class="mode-card-desc">遇着事儿了开点儿药</div>
+          </div>
+          <div class="emotion-grid" id="emotionGrid" style="display:none;">
+            <button class="emotion-btn" data-emotion="脑子卡壳" onclick="toggleEmotion(this)">&#129504; 脑子卡壳</button>
+            <button class="emotion-btn" data-emotion="精神内耗" onclick="toggleEmotion(this)">&#129300; 精神内耗</button>
+            <button class="emotion-btn" data-emotion="濒临崩溃" onclick="toggleEmotion(this)">&#128557; 濒临崩溃</button>
+            <button class="emotion-btn" data-emotion="原地爆炸" onclick="toggleEmotion(this)">&#128545; 原地爆炸</button>
+            <button class="emotion-btn" data-emotion="人间失格" onclick="toggleEmotion(this)">&#128560; 人间失格</button>
+            <button class="emotion-btn" data-emotion="火气拉满" onclick="toggleEmotion(this)">&#128293; 火气拉满</button>
+            <button class="emotion-btn" data-emotion="躺平摆烂" onclick="toggleEmotion(this)">&#128564; 躺平摆烂</button>
+            <button class="emotion-btn" data-emotion="自我怀疑" onclick="toggleEmotion(this)">&#128533; 自我怀疑</button>
+            <button class="emotion-btn" data-emotion="反骨上线" onclick="toggleEmotion(this)">&#129354; 反骨上线</button>
+          </div>
+          <div class="mode-card" onclick="switchMode('scene')">
+            <div class="mode-card-icon">&#127917;</div>
+            <div class="mode-card-title">场景索引</div>
+            <div class="mode-card-desc">具体场景精准下药</div>
+          </div>
+          <div class="scene-grid" id="sceneGrid" style="display:none;">
+            <button class="scene-btn" data-scene="方向缺失" onclick="toggleScene(this)">&#129518; 方向缺失</button>
+            <button class="scene-btn" data-scene="行动瘫痪" onclick="toggleScene(this)">&#129489; 行动瘫痪</button>
+            <button class="scene-btn" data-scene="压力过载" onclick="toggleScene(this)">&#128168; 压力过载</button>
+            <button class="scene-btn" data-scene="遭遇不公" onclick="toggleScene(this)">&#9878;&#65039; 遭遇不公</button>
+            <button class="scene-btn" data-scene="社死现场" onclick="toggleScene(this)">&#128552; 社死现场</button>
+            <button class="scene-btn" data-scene="一团乱麻" onclick="toggleScene(this)">&#127760; 一团乱麻</button>
+            <button class="scene-btn" data-scene="自我唱衰" onclick="toggleScene(this)">&#129318; 自我唱衰</button>
+            <button class="scene-btn" data-scene="夜间模式" onclick="toggleScene(this)">&#127769; 夜间模式</button>
+            <button class="scene-btn" data-scene="不知天高" onclick="toggleScene(this)">&#129488; 不知天高</button>
+          </div>
         </div>
 
-        <div class="card-area" id="cardArea" style="display:none;"></div>
+        <div class="card-area" id="cardArea"></div>
 
         <div class="empty-text" id="emptyState" style="display:none;">
-          全部抽完啦<br><span style="font-size:12px;color:rgba(0,0,0,0.25);">点击重新洗牌开始新一轮</span>
+          这个情绪下没有卡牌了<br><span style="font-size:12px;color:rgba(0,0,0,0.25);">换个情绪或重新洗牌</span>
         </div>
       </div>
 
       <div class="actions" id="actionsArea">
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="drawCard(1)">抽一张</button>
-          <button class="btn btn-secondary" onclick="drawCard(3)">抽三张</button>
-          <button class="btn btn-outline" onclick="drawCard(5)">抽五张</button>
+          <button class="btn btn-primary" onclick="drawCard()">&#127183; 抽一张</button>
         </div>
         <button class="btn-reset" onclick="resetDeck()">&#8635; 重新洗牌</button>
       </div>
@@ -56,7 +83,7 @@
 
     <div class="page" id="pageHistory">
       <div class="history-list" id="historyList">
-        <div class="history-empty" id="historyEmpty">还没有抽过卡<br><span style="font-size:12px;">去抽几张吧 &#10024;</span></div>
+        <div class="history-empty">还没有抽过卡<br><span style="font-size:12px;">去抽一张吧 &#128138;</span></div>
       </div>
     </div>
   </div>
@@ -72,9 +99,14 @@
     </button>
   </div>
 
+  <div class="card-overlay" id="cardOverlay" onclick="closeOverlayBg(event)">
+    <div class="card-overlay-content" id="cardOverlayContent"></div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
+<script src="data.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
